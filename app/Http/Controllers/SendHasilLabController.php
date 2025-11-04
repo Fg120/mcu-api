@@ -10,9 +10,16 @@ use Illuminate\Support\Facades\Storage;
 
 class SendHasilLabController extends Controller
 {
-    private const BASE_URL = 'https://mcu.test';
-    private const CLIENT_ID = 'cli_uuuk1r0dushrow5gg78c';
-    private const CLIENT_SECRET = 'sec_E2iIVHHQq1k89vyInu0OLNnRHBjpT85LzKSQmpH81zU2BkJe2Q054uJKLGTqc9w9';
+    private $baseUrl;
+    private $clientId;
+    private $clientSecret;
+
+    public function __construct()
+    {
+        $this->baseUrl = env('MCU_URL');
+        $this->clientId = env('MCU_API_KEY');
+        $this->clientSecret = env('MCU_API_SECRET');
+    }
 
     public function sendHasilLab()
     {
@@ -36,9 +43,9 @@ class SendHasilLabController extends Controller
 
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-                'X-Client-Id' => self::CLIENT_ID,
-                'X-Client-Secret' => self::CLIENT_SECRET,
-            ])->post(self::BASE_URL . '/api/hasil_lab', $data);
+                'X-Client-Id' => $this->clientId,
+                'X-Client-Secret' => $this->clientSecret,
+            ])->post($this->baseUrl . '/api/hasil_lab', $data);
 
             if ($response->successful()) {
                 return response()->json([
@@ -94,9 +101,9 @@ class SendHasilLabController extends Controller
 
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-                'X-Client-Id' => self::CLIENT_ID,
-                'X-Client-Secret' => self::CLIENT_SECRET,
-            ])->post(self::BASE_URL . '/api/hasil_lab', $data);
+                'X-Client-Id' => $this->clientId,
+                'X-Client-Secret' => $this->clientSecret,
+            ])->post($this->baseUrl . '/api/hasil_lab', $data);
 
             if ($response->successful()) {
                 return response()->json([
@@ -167,9 +174,9 @@ class SendHasilLabController extends Controller
                 try {
                     $response = Http::withHeaders([
                         'Content-Type' => 'application/json',
-                        'X-Client-Id' => self::CLIENT_ID,
-                        'X-Client-Secret' => self::CLIENT_SECRET,
-                    ])->post(self::BASE_URL . '/api/hasil_lab', $data);
+                        'X-Client-Id' => $this->clientId,
+                        'X-Client-Secret' => $this->clientSecret,
+                    ])->post($this->baseUrl . '/api/hasil_lab', $data);
 
                     if ($response->successful()) {
                         $results['success'][] = [
