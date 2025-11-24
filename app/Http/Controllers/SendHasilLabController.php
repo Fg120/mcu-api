@@ -25,76 +25,28 @@ class SendHasilLabController extends Controller
     {
         try {
             $data = [
+                "unit_id" => 1,
                 "nik" => "1234567890",
                 "no_mr" => "MR2303",
-                "tanggal_batch" => "2025-11-04",
+                "tanggal_periksa" => "2025-11-04",
                 "laboratorium_nama" => "Hematologi",
+                "penanggungjawab" => "dr. Amin",
+                "dokter_pengirim" => "dr. Budi",
+                "petugas_lab" => "Rina",
+                "ruang" => "Ruang Lab A",
+                "no_periksa" => "LAB-2025-001",
                 "hasil_pemeriksaan" => [
                     [
                         "nama_layanan" => "PCV",
+                        "kode_layanan" => "HEMPCV",
+                        "kode_hasil" => "PCV-01",
                         "hasil" => "500",
+                        "satuan" => "mg/dL",
+                        "nilai_rujukan" => "400-600",
                         "status" => "Tidak Normal",
                         "keterangan" => "amannn"
                     ]
                 ],
-                "keterangan" => "Pemeriksaan lengkap dengan file hasil",
-                "status" => "Dalam Pemeriksaan"
-            ];
-
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-                'X-Client-Id' => $this->clientId,
-                'X-Client-Secret' => $this->clientSecret,
-            ])->post($this->baseUrl . '/api/hasil_lab', $data);
-
-            if ($response->successful()) {
-                return response()->json([
-                    'status' => 'success',
-                    'response' => $response->json()
-                ]);
-            }
-
-            throw new RequestException($response);
-        } catch (RequestException $e) {
-            return response()->json([
-                'status' => 'error',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
-
-    public function sendHasilLabWithFile()
-    {
-        try {
-            // Path ke file PDF
-            $pdfPath = public_path('dokumen.pdf');
-
-            // Cek apakah file ada
-            if (!file_exists($pdfPath)) {
-                return response()->json([
-                    'status' => 'error',
-                    'message' => 'File dokumen.pdf tidak ditemukan di public folder'
-                ], 404);
-            }
-
-            // Baca file dan encode ke base64
-            $pdfContent = file_get_contents($pdfPath);
-            $base64Pdf = base64_encode($pdfContent);
-
-            $data = [
-                "nik" => "1234567890",
-                "no_mr" => "MR2303",
-                "tanggal_batch" => "2025-11-04",
-                "laboratorium_nama" => "Hematologi",
-                "hasil_pemeriksaan" => [
-                    [
-                        "nama_layanan" => "PCV",
-                        "hasil" => "500",
-                        "status" => "Tidak Normal",
-                        "keterangan" => "amannn"
-                    ]
-                ],
-                "file_base64" => $base64Pdf,
                 "keterangan" => "Pemeriksaan lengkap dengan file hasil",
                 "status" => "Dalam Pemeriksaan"
             ];
@@ -126,14 +78,24 @@ class SendHasilLabController extends Controller
         try {
             $hasilLabData = [
                 [
+                    "unit_id" => 1,
                     "nik" => "1234567890",
                     "no_mr" => "MR2303",
-                    "tanggal_batch" => "2025-11-04",
+                    "tanggal_periksa" => "2025-11-04",
                     "laboratorium_nama" => "Hematologi",
+                    "penanggungjawab" => "dr. Amin",
+                    "dokter_pengirim" => "dr. Budi",
+                    "petugas_lab" => "Rina",
+                    "ruang" => "Ruang Lab A",
+                    "no_periksa" => "LAB-2025-001",
                     "hasil_pemeriksaan" => [
                         [
                             "nama_layanan" => "PCV",
+                            "kode_layanan" => "HEMPCV",
+                            "kode_hasil" => "PCV-01",
                             "hasil" => "500",
+                            "satuan" => "mg/dL",
+                            "nilai_rujukan" => "400-600",
                             "status" => "Tidak Normal",
                             "keterangan" => "amannn"
                         ]
@@ -142,26 +104,19 @@ class SendHasilLabController extends Controller
                     "status" => "Selesai"
                 ],
                 [
-                    "nik" => "0987654321",
-                    "no_mr" => "MR2304",
-                    "tanggal_batch" => "2025-11-04",
+                    "unit_id" => 1,
+                    "nik" => "9876543210",
+                    "no_mr" => "MR9999",
+                    "tanggal_periksa" => "2025-11-04",
                     "laboratorium_nama" => "Hematologi",
-                    "hasil_pemeriksaan" => [
-                        [
-                            "nama_layanan" => "Hemoglobin",
-                            "hasil" => "15.2",
-                            "status" => "Normal",
-                            "keterangan" => "OK"
-                        ],
-                        [
-                            "nama_layanan" => "PCV",
-                            "hasil" => "50",
-                            "status" => "Tidak Normal",
-                            "keterangan" => "Memerlukan perhatian"
-                        ]
-                    ],
+                    "penanggungjawab" => "dr. Amin",
+                    "dokter_pengirim" => "dr. Budi",
+                    "petugas_lab" => "Rina",
+                    "ruang" => "Ruang Lab A",
+                    "no_periksa" => "LAB-2025-002",
+                    "hasil_pemeriksaan" => [],
                     "keterangan" => "Pasien 2",
-                    "status" => "Selesai"
+                    "status" => "Dalam Pemeriksaan"
                 ]
             ];
 
@@ -223,4 +178,152 @@ class SendHasilLabController extends Controller
             ], 500);
         }
     }
+
+    public function sendMultipleHasilLabBulk()
+    {
+        try {
+            $hasilLabData = [
+                [
+                    "unit_id" => 1,
+                    "nik" => "1234567890",
+                    "no_mr" => "MR2303",
+                    "tanggal_periksa" => "2025-11-04",
+                    "laboratorium_nama" => "Hematologi",
+                    "penanggungjawab" => "dr. Amin",
+                    "dokter_pengirim" => "dr. Budi",
+                    "petugas_lab" => "Rina",
+                    "ruang" => "Ruang Lab A",
+                    "no_periksa" => "LAB-2025-001",
+                    "hasil_pemeriksaan" => [
+                        [
+                            "nama_layanan" => "PCV",
+                            "kode_layanan" => "HEMPCV",
+                            "kode_hasil" => "PCV-01",
+                            "hasil" => "500",
+                            "satuan" => "mg/dL",
+                            "nilai_rujukan" => "400-600",
+                            "status" => "Tidak Normal",
+                            "keterangan" => "amannn"
+                        ]
+                    ],
+                    "keterangan" => "Pasien 1",
+                    "status" => "Selesai"
+                ],
+                [
+                    "unit_id" => 1,
+                    "nik" => "9876543210",
+                    "no_mr" => "MR9999",
+                    "tanggal_periksa" => "2025-11-04",
+                    "laboratorium_nama" => "Hematologi",
+                    "penanggungjawab" => "dr. Amin",
+                    "dokter_pengirim" => "dr. Budi",
+                    "petugas_lab" => "Rina",
+                    "ruang" => "Ruang Lab A",
+                    "no_periksa" => "LAB-2025-002",
+                    "hasil_pemeriksaan" => [],
+                    "keterangan" => "Pasien 2",
+                    "status" => "Dalam Pemeriksaan"
+                ]
+            ];
+
+            $payload = [
+                'items' => $hasilLabData,
+            ];
+
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'X-Client-Id' => $this->clientId,
+                'X-Client-Secret' => $this->clientSecret,
+            ])->post($this->baseUrl . '/api/hasil_lab/bulk', $payload);
+
+            $body = $response->json();
+
+            if ($response->successful()) {
+                Log::info('Batch hasil lab send completed', [
+                    'summary' => $body['summary'] ?? null,
+                ]);
+
+                return response()->json([
+                    'status' => 'success',
+                    'response' => $body,
+                ], 200);
+            }
+
+            return response()->json([
+                'status' => 'error',
+                'status_code' => $response->status(),
+                'response' => $body,
+            ], $response->status());
+        } catch (\Exception $e) {
+            Log::error('Batch hasil lab send failed', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Batch processing failed',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+    // public function sendHasilLabWithFile()
+    // {
+    //     try {
+    //         $pdfPath = public_path('dokumen.pdf');
+    //         if (!file_exists($pdfPath)) {
+    //             return response()->json([
+    //                 'status' => 'error',
+    //                 'message' => 'File dokumen.pdf tidak ditemukan di public folder'
+    //             ], 404);
+    //         }
+    //         $pdfContent = file_get_contents($pdfPath);
+    //         $base64Pdf = base64_encode($pdfContent);
+    //         $data = [
+    //             "unit_id" => 1,
+    //             "nik" => "1234567890",
+    //             "no_mr" => "MR2303",
+    //             "tanggal_periksa" => "2025-11-04",
+    //             "laboratorium_nama" => "Hematologi",
+    //             "penanggungjawab" => "dr. Amin",
+    //             "dokter_pengirim" => "dr. Budi",
+    //             "petugas_lab" => "Rina",
+    //             "ruang" => "Ruang Lab A",
+    //             "no_periksa" => "LAB-2025-001",
+    //             "hasil_pemeriksaan" => [
+    //                 [
+    //                     "nama_layanan" => "PCV",
+    //                     "kode_layanan" => "HEMPCV",
+    //                     "kode_hasil" => "PCV-01",
+    //                     "hasil" => "500",
+    //                     "satuan" => "mg/dL",
+    //                     "nilai_rujukan" => "400-600",
+    //                     "status" => "Tidak Normal",
+    //                     "keterangan" => "amannn"
+    //                 ]
+    //             ],
+    //             "file_base64" => $base64Pdf,
+    //             "keterangan" => "Pemeriksaan lengkap dengan file hasil",
+    //             "status" => "Dalam Pemeriksaan"
+    //         ];
+    //         $response = Http::withHeaders([
+    //             'Content-Type' => 'application/json',
+    //             'X-Client-Id' => $this->clientId,
+    //             'X-Client-Secret' => $this->clientSecret,
+    //         ])->post($this->baseUrl . '/api/hasil_lab', $data);
+    //         if ($response->successful()) {
+    //             return response()->json([
+    //                 'status' => 'success',
+    //                 'response' => $response->json()
+    //             ]);
+    //         }
+    //         throw new RequestException($response);
+    //     } catch (RequestException $e) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 }

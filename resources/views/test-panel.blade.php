@@ -187,7 +187,7 @@
                     <strong>Method:</strong> POST<br>
                     <strong>File:</strong> dokumen.pdf
                 </div>
-                <button class="btn" onclick="testSendHasilLabWithFile(this)">
+                <button class="btn" disabled onclick="testSendHasilLabWithFile(this)">
                     Test Send (With File)
                 </button>
             </div>
@@ -195,13 +195,26 @@
             <!-- Send Multiple Hasil Lab Card -->
             <div class="card">
                 <h2>📊 Send Hasil Lab (Multiple)</h2>
-                <p>Mengirim hasil laboratorium untuk multiple pasien sekaligus (batch).</p>
+                <p>Data dikirimkan satu per satu ke Endpoint.</p>
                 <div class="info-box">
                     <strong>Endpoint:</strong> /api/hasil_lab (batch)<br>
                     <strong>Method:</strong> POST<br>
                     <strong>Count:</strong> 2 pasien
                 </div>
                 <button class="btn" onclick="testSendMultipleHasilLab(this)">
+                    Test Send Multiple
+                </button>
+            </div>
+
+            <div class="card">
+                <h2>📊 Send Hasil Lab (Multiple Bulk)</h2>
+                <p>Data dikirimkan sekaligus berupa array ke Endpoint, dan di proses satu per satu di Endpoint.</p>
+                <div class="info-box">
+                    <strong>Endpoint:</strong> /api/hasil_lab/bulk (batch)<br>
+                    <strong>Method:</strong> POST<br>
+                    <strong>Count:</strong> 2 pasien
+                </div>
+                <button class="btn" onclick="testSendMultipleHasilLabBulk(this)">
                     Test Send Multiple
                 </button>
             </div>
@@ -256,9 +269,29 @@
         }
 
         async function testSendHasilLabWithFile(btn) {
+            // showLoading(btn);
+            // try {
+            //     const response = await fetch('/test/send-hasil-lab-with-file', {
+            //         method: 'GET',
+            //         headers: {
+            //             'Accept': 'application/json',
+            //         }
+            //     });
+            //     const data = await response.json();
+            //     showResponse(data, response.ok);
+            // } catch (error) {
+            //     showResponse({
+            //         error: error.message
+            //     }, false);
+            // } finally {
+            //     hideLoading(btn, 'Test Send (With File)');
+            // }
+        }
+
+        async function testSendMultipleHasilLab(btn) {
             showLoading(btn);
             try {
-                const response = await fetch('/test/send-hasil-lab-with-file', {
+                const response = await fetch('/test/send-multiple-hasil-lab', {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -271,14 +304,14 @@
                     error: error.message
                 }, false);
             } finally {
-                hideLoading(btn, 'Test Send (With File)');
+                hideLoading(btn, 'Test Send Multiple');
             }
         }
 
-        async function testSendMultipleHasilLab(btn) {
+        async function testSendMultipleHasilLabBulk(btn) {
             showLoading(btn);
             try {
-                const response = await fetch('/test/send-multiple-hasil-lab', {
+                const response = await fetch('/test/send-multiple-hasil-lab-bulk', {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',

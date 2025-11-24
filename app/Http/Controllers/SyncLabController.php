@@ -7,67 +7,88 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class SyncLabController
+class SyncLabController extends Controller
 {
+    private $baseUrl;
+    private $clientId;
+    private $clientSecret;
+
+    public function __construct()
+    {
+        $this->baseUrl = env('MCU_URL', 'https://mcu.test');
+        $this->clientId = env('MCU_API_KEY', 'cli_uuuk1r0dushrow5gg78c');
+        $this->clientSecret = env('MCU_API_SECRET', 'sec_E2iIVHHQq1k89vyInu0OLNnRHBjpT85LzKSQmpH81zU2BkJe2Q054uJKLGTqc9w9');
+    }
+
+    /**
+     * Kirim data laboratorium ke API eksternal (endpoint /api/sync_lab)
+     * Menggunakan kunci field Bahasa Indonesia (utama) dan kompatibel jika masih memakai field bahasa Inggris.
+     */
     public function syncToExternalApi()
     {
         try {
-            $baseUrl = env('MCU_URL');
-            $clientId = env('MCU_API_KEY');
-            $clientSecret = env('MCU_API_SECRET');
+            $baseUrl = $this->baseUrl;
+            $clientId = $this->clientId;
+            $clientSecret = $this->clientSecret;
 
+            // Contoh payload berbahasa Indonesia
             $data = [
                 [
-                    "category" => "Laboratorium 1",
-                    "services" => [
+                    'kategori' => 'Laboratorium 1',
+                    'layanan' => [
                         [
-                            "name" => "Layanan 1",
-                            "type" => "integer",
-                            "limits" => [
+                            // tambahkan kode layanan supaya server bisa mencocokkan/identifikasi layanan
+                            'kode_layanan' => 'LB-HB-001',
+                            'nama' => 'Layanan 1',
+                            'tipe' => 'integer',
+                            'batas' => [
                                 [
-                                    "gender" => "laki-laki",
-                                    "usia_min" => 18,
-                                    "usia_max" => 65,
-                                    "batas_bawah" => 13,
-                                    "batas_atas" => 17
+                                    'gender' => 'laki-laki',
+                                    'usia_min' => 18,
+                                    'usia_max' => 65,
+                                    'batas_bawah' => 13,
+                                    'batas_atas' => 17,
                                 ],
                                 [
-                                    "gender" => "perempuan",
-                                    "usia_min" => 18,
-                                    "usia_max" => 65,
-                                    "batas_bawah" => 12,
-                                    "batas_atas" => 15
-                                ]
-                            ]
+                                    'gender' => 'perempuan',
+                                    'usia_min' => 18,
+                                    'usia_max' => 65,
+                                    'batas_bawah' => 12,
+                                    'batas_atas' => 15,
+                                ],
+                            ],
                         ],
                         [
-                            "name" => "Layanan 2",
-                            "type" => "integer",
-                            "limits" => [
+                            'kode_layanan' => 'LB-WBC-002',
+                            'nama' => 'Layanan 2',
+                            'tipe' => 'integer',
+                            'batas' => [
                                 [
-                                    "gender" => null,
-                                    "usia_min" => 18,
-                                    "usia_max" => 65,
-                                    "batas_bawah" => 4000,
-                                    "batas_atas" => 11000
-                                ]
-                            ]
-                        ]
-                    ]
+                                    'gender' => null,
+                                    'usia_min' => 18,
+                                    'usia_max' => 65,
+                                    'batas_bawah' => 4000,
+                                    'batas_atas' => 11000,
+                                ],
+                            ],
+                        ],
+                    ],
                 ],
                 [
-                    "category" => "Laboratorium 2",
-                    "services" => [
+                    'kategori' => 'Laboratorium 2',
+                    'layanan' => [
                         [
-                            "name" => "Layanan A",
-                            "type" => "integer"
+                            'kode_layanan' => 'LB-GLC-101',
+                            'nama' => 'Layanan A',
+                            'tipe' => 'integer',
                         ],
                         [
-                            "name" => "Layanan B",
-                            "type" => "integer"
+                            'kode_layanan' => 'LB-GLC-102',
+                            'nama' => 'Layanan B',
+                            'tipe' => 'integer',
                         ],
-                    ]
-                ]
+                    ],
+                ],
             ];
 
             $response = Http::withHeaders([
@@ -77,25 +98,30 @@ class SyncLabController
             ])->post($baseUrl . '/api/sync_lab', $data);
 
             if ($response->successful()) {
-                Log::info('Lab data synced successfully', $response->json());
+                // Log respons server (dalam Bahasa Indonesia jika server menggunakan terjemahan)
+                Log::info('Data lab berhasil dikirim ke API eksternal', $response->json());
+
+                // Menyesuaikan response yang dikembalikan ke pemanggil lokal
                 return response()->json([
-                    'status' => 'success',
-                    'message' => 'Data synced to external API',
-                    'response' => $response->json()
+                    'status' => 'sukses',
+                    'message' => 'Data tersinkronisasi ke API eksternal',
+                    'response_server' => $response->json(),
                 ]);
             }
 
+            // Jika bukan HTTP 2xx, lempar exception untuk ditangani di catch
             throw new RequestException($response);
         } catch (RequestException $e) {
-            Log::error('Failed to sync lab data', [
+            Log::error('Gagal mengirim data lab', [
                 'error' => $e->getMessage(),
-                'response' => $e->response?->json()
+                'response' => $e->response?->json(),
             ]);
 
             return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to sync data',
-                'error' => $e->getMessage()
+                'status' => 'gagal',
+                'message' => 'Gagal mengirim data ke API eksternal',
+                'error' => $e->getMessage(),
+                'response_server' => $e->response?->json(),
             ], 500);
         }
     }
