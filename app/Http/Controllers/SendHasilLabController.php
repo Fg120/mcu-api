@@ -21,6 +21,14 @@ class SendHasilLabController extends Controller
         $this->clientSecret = env('MCU_API_SECRET');
     }
 
+    /**
+     * Kirim hasil lab tunggal ke API MCU
+     * 
+     * Format terkini menggunakan:
+     * - kode_rsuk/kode_rsubh untuk identifikasi laboratorium (minimal salah satu)
+     * - kode_rsuk/kode_rsubh untuk identifikasi layanan (minimal salah satu)
+     * - waktu_periksa (datetime) menggantikan tanggal_periksa
+     */
     public function sendHasilLab()
     {
         try {
@@ -28,8 +36,9 @@ class SendHasilLabController extends Controller
                 "unit_id" => 1,
                 "nik" => "1234567890",
                 "no_mr" => "MR2303",
-                "tanggal_periksa" => "2025-11-04",
-                "laboratorium_nama" => "Hematologi",
+                "waktu_periksa" => "2025-12-22 08:30:00",
+                "kode_rsuk" => "LAB-RSUK-001",      // Kode laboratorium RSUK (atau kode_rsubh)
+                "kode_rsubh" => null,               // Kode laboratorium RSUBH (nullable)
                 "penanggungjawab" => "dr. Amin",
                 "dokter_pengirim" => "dr. Budi",
                 "petugas_lab" => "Rina",
@@ -37,17 +46,14 @@ class SendHasilLabController extends Controller
                 "no_periksa" => "LAB-2025-001",
                 "hasil_pemeriksaan" => [
                     [
-                        "nama_layanan" => "PCV",
-                        "kode_layanan" => "HEMPCV",
-                        "kode_hasil" => "PCV-01",
-                        "hasil" => "500",
-                        "satuan" => "mg/dL",
-                        "nilai_rujukan" => "400-600",
+                        "kode_rsuk" => "HEMPCV",        // Kode layanan RSUK (atau kode_rsubh)
+                        "kode_rsubh" => null,           // Kode layanan RSUBH (nullable)
+                        "hasil" => "50",
                         "status" => "Tidak Normal",
                         "keterangan" => "amannn"
                     ]
                 ],
-                "keterangan" => "Pemeriksaan lengkap dengan file hasil",
+                "keterangan" => "Pemeriksaan lengkap",
                 "status" => "Dalam Pemeriksaan"
             ];
 
@@ -73,6 +79,9 @@ class SendHasilLabController extends Controller
         }
     }
 
+    /**
+     * Kirim multiple hasil lab satu per satu ke API MCU
+     */
     public function sendMultipleHasilLab()
     {
         try {
@@ -81,8 +90,9 @@ class SendHasilLabController extends Controller
                     "unit_id" => 1,
                     "nik" => "1234567890",
                     "no_mr" => "MR2303",
-                    "tanggal_periksa" => "2025-11-04",
-                    "laboratorium_nama" => "Hematologi",
+                    "waktu_periksa" => "2025-12-22 08:30:00",
+                    "kode_rsuk" => "LAB-RSUK-001",
+                    "kode_rsubh" => null,
                     "penanggungjawab" => "dr. Amin",
                     "dokter_pengirim" => "dr. Budi",
                     "petugas_lab" => "Rina",
@@ -90,12 +100,9 @@ class SendHasilLabController extends Controller
                     "no_periksa" => "LAB-2025-001",
                     "hasil_pemeriksaan" => [
                         [
-                            "nama_layanan" => "PCV",
-                            "kode_layanan" => "HEMPCV",
-                            "kode_hasil" => "PCV-01",
+                            "kode_rsuk" => "HEMPCV",
+                            "kode_rsubh" => null,
                             "hasil" => "500",
-                            "satuan" => "mg/dL",
-                            "nilai_rujukan" => "400-600",
                             "status" => "Tidak Normal",
                             "keterangan" => "amannn"
                         ]
@@ -107,14 +114,23 @@ class SendHasilLabController extends Controller
                     "unit_id" => 1,
                     "nik" => "9876543210",
                     "no_mr" => "MR9999",
-                    "tanggal_periksa" => "2025-11-04",
-                    "laboratorium_nama" => "Hematologi",
+                    "waktu_periksa" => "2025-12-22 09:00:00",
+                    "kode_rsuk" => null,
+                    "kode_rsubh" => "LAB-RSUBH-002",     // Menggunakan kode RSUBH
                     "penanggungjawab" => "dr. Amin",
                     "dokter_pengirim" => "dr. Budi",
                     "petugas_lab" => "Rina",
                     "ruang" => "Ruang Lab A",
                     "no_periksa" => "LAB-2025-002",
-                    "hasil_pemeriksaan" => [],
+                    "hasil_pemeriksaan" => [
+                        [
+                            "kode_rsuk" => null,
+                            "kode_rsubh" => "GLC-RSUBH-001",    // Menggunakan kode RSUBH
+                            "hasil" => "95",
+                            "status" => "Normal",
+                            "keterangan" => "GDP normal"
+                        ]
+                    ],
                     "keterangan" => "Pasien 2",
                     "status" => "Dalam Pemeriksaan"
                 ]
@@ -179,6 +195,10 @@ class SendHasilLabController extends Controller
         }
     }
 
+    /**
+     * Kirim multiple hasil lab sekaligus (bulk) ke API MCU
+     * Menggunakan endpoint /api/hasil_lab/bulk
+     */
     public function sendMultipleHasilLabBulk()
     {
         try {
@@ -187,8 +207,9 @@ class SendHasilLabController extends Controller
                     "unit_id" => 1,
                     "nik" => "1234567890",
                     "no_mr" => "MR2303",
-                    "tanggal_periksa" => "2025-11-04",
-                    "laboratorium_nama" => "Hematologi",
+                    "waktu_periksa" => "2025-12-22 08:30:00",
+                    "kode_rsuk" => "LAB-RSUK-001",
+                    "kode_rsubh" => null,
                     "penanggungjawab" => "dr. Amin",
                     "dokter_pengirim" => "dr. Budi",
                     "petugas_lab" => "Rina",
@@ -196,14 +217,18 @@ class SendHasilLabController extends Controller
                     "no_periksa" => "LAB-2025-001",
                     "hasil_pemeriksaan" => [
                         [
-                            "nama_layanan" => "PCV",
-                            "kode_layanan" => "HEMPCV",
-                            "kode_hasil" => "PCV-01",
+                            "kode_rsuk" => "HEMPCV",
+                            "kode_rsubh" => null,
                             "hasil" => "500",
-                            "satuan" => "mg/dL",
-                            "nilai_rujukan" => "400-600",
                             "status" => "Tidak Normal",
                             "keterangan" => "amannn"
+                        ],
+                        [
+                            "kode_rsuk" => "WBC-001",
+                            "kode_rsubh" => "WBC-RSUBH-001",    // Bisa keduanya diisi
+                            "hasil" => "7500",
+                            "status" => "Normal",
+                            "keterangan" => "WBC normal"
                         ]
                     ],
                     "keterangan" => "Pasien 1",
@@ -213,8 +238,9 @@ class SendHasilLabController extends Controller
                     "unit_id" => 1,
                     "nik" => "9876543210",
                     "no_mr" => "MR9999",
-                    "tanggal_periksa" => "2025-11-04",
-                    "laboratorium_nama" => "Hematologi",
+                    "waktu_periksa" => "2025-12-22 09:00:00",
+                    "kode_rsuk" => null,
+                    "kode_rsubh" => "LAB-RSUBH-002",
                     "penanggungjawab" => "dr. Amin",
                     "dokter_pengirim" => "dr. Budi",
                     "petugas_lab" => "Rina",
@@ -284,8 +310,9 @@ class SendHasilLabController extends Controller
     //             "unit_id" => 1,
     //             "nik" => "1234567890",
     //             "no_mr" => "MR2303",
-    //             "tanggal_periksa" => "2025-11-04",
-    //             "laboratorium_nama" => "Hematologi",
+    //             "waktu_periksa" => "2025-12-22 08:30:00",
+    //             "kode_rsuk" => "LAB-RSUK-001",
+    //             "kode_rsubh" => null,
     //             "penanggungjawab" => "dr. Amin",
     //             "dokter_pengirim" => "dr. Budi",
     //             "petugas_lab" => "Rina",
@@ -293,12 +320,9 @@ class SendHasilLabController extends Controller
     //             "no_periksa" => "LAB-2025-001",
     //             "hasil_pemeriksaan" => [
     //                 [
-    //                     "nama_layanan" => "PCV",
-    //                     "kode_layanan" => "HEMPCV",
-    //                     "kode_hasil" => "PCV-01",
+    //                     "kode_rsuk" => "HEMPCV",
+    //                     "kode_rsubh" => null,
     //                     "hasil" => "500",
-    //                     "satuan" => "mg/dL",
-    //                     "nilai_rujukan" => "400-600",
     //                     "status" => "Tidak Normal",
     //                     "keterangan" => "amannn"
     //                 ]

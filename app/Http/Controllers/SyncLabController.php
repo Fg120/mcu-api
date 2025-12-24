@@ -22,7 +22,9 @@ class SyncLabController extends Controller
 
     /**
      * Kirim data laboratorium ke API eksternal (endpoint /api/sync_lab)
-     * Menggunakan kunci field Bahasa Indonesia (utama) dan kompatibel jika masih memakai field bahasa Inggris.
+     * 
+     * Format field menggunakan kode_rsuk dan kode_rsubh untuk identifikasi.
+     * Minimal salah satu kode harus diisi (kode_rsuk atau kode_rsubh).
      */
     public function syncToExternalApi()
     {
@@ -31,16 +33,20 @@ class SyncLabController extends Controller
             $clientId = $this->clientId;
             $clientSecret = $this->clientSecret;
 
-            // Contoh payload berbahasa Indonesia
+            // Contoh payload dengan kode_rsuk dan kode_rsubh
             $data = [
                 [
                     'kategori' => 'Laboratorium 1',
+                    'kode_rsuk' => 'LAB-RSUK-001',      // Kode untuk RSUK (nullable, minimal salah satu)
+                    'kode_rsubh' => null,               // Kode untuk RSUBH (nullable, minimal salah satu)
                     'layanan' => [
                         [
-                            // tambahkan kode layanan supaya server bisa mencocokkan/identifikasi layanan
-                            'kode_layanan' => 'LB-HB-001',
-                            'nama' => 'Layanan 1',
+                            'kode_rsuk' => 'LB-HB-001',     // Kode layanan RSUK
+                            'kode_rsubh' => 'LB-HB-001-BH', // Kode layanan RSUBH (boleh null)
+                            'nama' => 'Hemoglobin',
                             'tipe' => 'integer',
+                            'satuan' => 'g/dL',
+                            'nilai_rujukan' => '13-17',
                             'batas' => [
                                 [
                                     'gender' => 'laki-laki',
@@ -59,9 +65,12 @@ class SyncLabController extends Controller
                             ],
                         ],
                         [
-                            'kode_layanan' => 'LB-WBC-002',
-                            'nama' => 'Layanan 2',
+                            'kode_rsuk' => 'LB-WBC-002',
+                            'kode_rsubh' => null,           // Hanya punya kode RSUK
+                            'nama' => 'WBC',
                             'tipe' => 'integer',
+                            'satuan' => '/uL',
+                            'nilai_rujukan' => '4000-11000',
                             'batas' => [
                                 [
                                     'gender' => null,
@@ -76,16 +85,24 @@ class SyncLabController extends Controller
                 ],
                 [
                     'kategori' => 'Laboratorium 2',
+                    'kode_rsuk' => null,                    // Hanya punya kode RSUBH
+                    'kode_rsubh' => 'LAB-RSUBH-002',
                     'layanan' => [
                         [
-                            'kode_layanan' => 'LB-GLC-101',
-                            'nama' => 'Layanan A',
+                            'kode_rsuk' => null,
+                            'kode_rsubh' => 'LB-GLC-101',   // Hanya punya kode RSUBH
+                            'nama' => 'Glukosa Puasa',
                             'tipe' => 'integer',
+                            'satuan' => 'mg/dL',
+                            'nilai_rujukan' => '70-100',
                         ],
                         [
-                            'kode_layanan' => 'LB-GLC-102',
-                            'nama' => 'Layanan B',
+                            'kode_rsuk' => 'LB-GLC-102',
+                            'kode_rsubh' => 'LB-GLC-102-BH',
+                            'nama' => 'Glukosa 2 Jam PP',
                             'tipe' => 'integer',
+                            'satuan' => 'mg/dL',
+                            'nilai_rujukan' => '<140',
                         ],
                     ],
                 ],
@@ -98,10 +115,8 @@ class SyncLabController extends Controller
             ])->post($baseUrl . '/api/sync_lab', $data);
 
             if ($response->successful()) {
-                // Log respons server (dalam Bahasa Indonesia jika server menggunakan terjemahan)
                 Log::info('Data lab berhasil dikirim ke API eksternal', $response->json());
 
-                // Menyesuaikan response yang dikembalikan ke pemanggil lokal
                 return response()->json([
                     'status' => 'sukses',
                     'message' => 'Data tersinkronisasi ke API eksternal',
@@ -109,7 +124,6 @@ class SyncLabController extends Controller
                 ]);
             }
 
-            // Jika bukan HTTP 2xx, lempar exception untuk ditangani di catch
             throw new RequestException($response);
         } catch (RequestException $e) {
             Log::error('Gagal mengirim data lab', [
@@ -120,6 +134,84 @@ class SyncLabController extends Controller
             return response()->json([
                 'status' => 'gagal',
                 'message' => 'Gagal mengirim data ke API eksternal',
+                'error' => $e->getMessage(),
+                'response_server' => $e->response?->json(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Contoh kirim hasil lab ke API eksternal (endpoint /api/hasil_lab)
+     * 
+     * Format menggunakan kode_rsuk/kode_rsubh untuk identifikasi laboratorium dan layanan.
+     * Minimal salah satu kode harus diisi.
+     */
+    public function sendHasilLabExample()
+    {
+        try {
+            $baseUrl = $this->baseUrl;
+            $clientId = $this->clientId;
+            $clientSecret = $this->clientSecret;
+
+            // Contoh payload hasil lab dengan kode_rsuk dan kode_rsubh
+            $data = [
+                'unit_id' => 1,
+                'nik' => '1234567890123456',
+                'no_mr' => 'MR2303',
+                'waktu_periksa' => '2025-12-22 08:30:00',
+                'kode_rsuk' => 'LAB-RSUK-001',      // Kode laboratorium RSUK (atau kode_rsubh)
+                'kode_rsubh' => null,               // Bisa juga menggunakan kode_rsubh
+                'penanggungjawab' => 'dr. Amin',
+                'dokter_pengirim' => 'dr. Budi',
+                'petugas_lab' => 'Rina',
+                'ruang' => 'Ruang Lab A',
+                'no_periksa' => 'LAB-2025-001',
+                'hasil_pemeriksaan' => [
+                    [
+                        'kode_rsuk' => 'LB-HB-001',     // Kode layanan RSUK (atau kode_rsubh)
+                        'kode_rsubh' => null,           // Minimal salah satu harus diisi
+                        'hasil' => '14.5',
+                        'status' => 'Normal',
+                        'keterangan' => 'Dalam batas normal'
+                    ],
+                    [
+                        'kode_rsuk' => null,
+                        'kode_rsubh' => 'LB-GLC-101',   // Menggunakan kode RSUBH
+                        'hasil' => '95',
+                        'status' => 'Normal',
+                        'keterangan' => 'GDP normal'
+                    ],
+                ],
+                'keterangan' => 'Pemeriksaan rutin lengkap',
+                'status' => 'Selesai'
+            ];
+
+            $response = Http::withHeaders([
+                'Content-Type' => 'application/json',
+                'X-Client-Id' => $clientId,
+                'X-Client-Secret' => $clientSecret,
+            ])->post($baseUrl . '/api/hasil_lab', $data);
+
+            if ($response->successful()) {
+                Log::info('Hasil lab berhasil dikirim ke API eksternal', $response->json());
+
+                return response()->json([
+                    'status' => 'sukses',
+                    'message' => 'Hasil lab berhasil dikirim',
+                    'response_server' => $response->json(),
+                ]);
+            }
+
+            throw new RequestException($response);
+        } catch (RequestException $e) {
+            Log::error('Gagal mengirim hasil lab', [
+                'error' => $e->getMessage(),
+                'response' => $e->response?->json(),
+            ]);
+
+            return response()->json([
+                'status' => 'gagal',
+                'message' => 'Gagal mengirim hasil lab ke API eksternal',
                 'error' => $e->getMessage(),
                 'response_server' => $e->response?->json(),
             ], 500);
